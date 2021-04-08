@@ -4,6 +4,7 @@ import static java.lang.System.exit;
 import static java.lang.System.out;
 
 import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
@@ -34,7 +35,7 @@ public class ImageQuantizer {
 		BufferedImage inputImage = ImageIO.read(new File(args[0]));
 		BufferedImage outputImage;
 		// pre blur to reduce noise
-		outputImage = ImageBlur.imageBlur(inputImage, 5);
+		outputImage = ImageBlur.imageBlur(inputImage, 2);
 		// quantize to palette
 		outputImage = ImageQuantize.quantizeImage(outputImage, Palettes.MONOKAI);
 		ImageIO.write(outputImage, "png", new FileOutputStream(new File(args[1])));
@@ -161,9 +162,23 @@ class ImageBlur {
 	public static BufferedImage imageBlur(BufferedImage image, int radius) {
 		Kernel kernel = makeLinearBlurKernel(radius);
 		ConvolveOp op = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
-		BufferedImage outputImage = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
-		op.filter(image, outputImage);
-		return outputImage;
+
+		BufferedImage intermediateImage = new BufferedImage(
+				image.getWidth() + 2 * radius,
+				image.getHeight() + 2 * radius,
+				image.getType());
+		Graphics g = intermediateImage.createGraphics();
+		g.setColor(new Color(0, 0, 0, 0));
+		g.fillRect(0, 0, intermediateImage.getWidth(), intermediateImage.getHeight());
+		g.drawImage(image, radius + 1, radius + 1, null);
+		g.dispose();
+
+		BufferedImage outputImage = new BufferedImage(
+			image.getWidth() + 2 * radius,
+			image.getHeight() + 2 * radius,
+			image.getType());
+		op.filter(intermediateImage, outputImage);
+		return outputImage.getSubimage(radius + 1, radius + 1, image.getWidth(), image.getHeight());
 	}
 
 	private static Kernel makeLinearBlurKernel(int radius) {

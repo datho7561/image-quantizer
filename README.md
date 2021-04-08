@@ -15,11 +15,19 @@ Requires j'bang to run
 jbang ImageQuantizer.java input-image.png output-image.png
 ```
 
+## Demo
+
+Run `make` in the root to replicate this demo
+
+| Input | Output |
+| ----- | ------ |
+| ![](./demo/sean-foley-kMpbE_-jCeI-unsplash.jpg) | ![](./demo/sean-foley-kMpbE_-jCeI-unsplash-quantized.png) |
+
+## Limitations
+
+ * The image is always output in png format
+
 ## Hacking
 
 To use a different scheme, make a list of `java.awt.Color`,
 and pass it to `ImageQuantize.quantizeImage` instead of `MONOKAI` in the `main` method.
-
-## Quality of the blurring algorithm
-
-Real bad
