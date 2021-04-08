@@ -28,8 +28,7 @@ Run `make` in the root to replicate this demo
 | ----- | ------ |
 | ![](./demo/sean-foley-kMpbE_-jCeI-unsplash.jpg) | ![](./demo/sean-foley-kMpbE_-jCeI-unsplash-quantized.png) |
 
-The demo photo was taken by [Sean Foley](https://unsplash.com/@_stfeyes).
-I found it through Unsplash.
+Photo by [Sean Foley](https://unsplash.com/photos/kMpbE_-jCeI) on [Unsplash](https://unsplash.com/)
 
 ## Limitations
 

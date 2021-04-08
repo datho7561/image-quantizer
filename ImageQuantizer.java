@@ -1,5 +1,9 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
 
+/**
+ * Copyright (c) 2021 David Thompson
+ */
+
 import static java.lang.System.exit;
 import static java.lang.System.out;
 
