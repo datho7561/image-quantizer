@@ -9,9 +9,13 @@ import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -79,8 +83,8 @@ class ImageQuantize {
 
 		int availableProcessors = Runtime.getRuntime().availableProcessors();
 
-		// multi thread it to make it speed
-		if (GoatUtils.isGoat() /* availableProcessors > 1 */) {
+		// Multi thread if possible to speed up the process
+		if (availableProcessors > 1) {
 			multiThreadQuantize(image, outputImage, palette, availableProcessors);
 		} else {
 			singleThreadQuantize(image, outputImage, palette);
@@ -95,7 +99,25 @@ class ImageQuantize {
 
 	private static void multiThreadQuantize(BufferedImage input, BufferedImage output, List<Color> palette,
 			int availableProcessors) {
-		// TODO:
+		ExecutorService pool = Executors.newFixedThreadPool(availableProcessors);
+		List<CompletableFuture<Void>> futures = new ArrayList<>();
+		int sliceHeight = input.getHeight() / availableProcessors;
+		int startY = 0;
+
+		for (int i = 0; i < availableProcessors; i++) {
+			int endY = i - 1 == availableProcessors ? input.getHeight() : startY + sliceHeight;
+			final int finalStartY = startY;
+			final int finalEndY = endY;
+			futures.add(CompletableFuture.runAsync(() -> {
+				quantizeRange(input, output, 0, input.getWidth(), finalStartY, finalEndY, palette);
+			}, pool));
+			startY += sliceHeight;
+		}
+
+		for (CompletableFuture<Void> future : futures) {
+			future.join();
+		}
+		pool.shutdown();
 	}
 
 	/**
@@ -122,7 +144,7 @@ class ImageQuantize {
 }
 
 /**
- * Bargain bin Bokeh blur emulation
+ * Library to blur a BufferedImage
  */
 class ImageBlur {
 
@@ -137,46 +159,20 @@ class ImageBlur {
 	 * @return a copy of the given image that is blurred
 	 */
 	public static BufferedImage imageBlur(BufferedImage image, int radius) {
-		Kernel kernel = makeBlurKernel(radius);
+		Kernel kernel = makeLinearBlurKernel(radius);
 		ConvolveOp op = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
 		BufferedImage outputImage = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
 		op.filter(image, outputImage);
 		return outputImage;
 	}
 
-	/**
-	 * Bargain Bokeh blur
-	 */
-	private static Kernel makeBlurKernel(int radius) {
-		// the kernel is an aliased circle,
-		// with the amplitude divided by the number of filled pixels
-		int filled = 0;
+	private static Kernel makeLinearBlurKernel(int radius) {
 		int size = radius * 2 + 1;
+		int area = size * size;
 		float[] kernelArray = new float[size * size];
-
-		for (int x = 0; x < size; x++) {
-			for (int y = 0; y < size; y++) {
-
-				double x2 = x - radius;
-				x2 *= x2;
-				double y2 = y - radius;
-				y2 *= y2;
-
-				double dist = Math.sqrt(x2 + y2);
-
-				if (dist < radius) {
-					kernelArray[y * size + x] = 1;
-					filled++;
-				} else {
-					kernelArray[y * size + x] = 0;
-				}
-			}
-		}
-
 		for (int i = 0; i < kernelArray.length; i++) {
-			kernelArray[i] /= filled;
+			kernelArray[i] = 1f / ((float)area);
 		}
-
 		return new Kernel(size, size, kernelArray);
 	}
 
@@ -275,10 +271,4 @@ class Palettes {
 		return palette.get(closestIndex);
 	}
 
-}
-
-class GoatUtils {
-	public static boolean isGoat() {
-		return false;
-	}
 }
