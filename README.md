@@ -5,7 +5,7 @@
 Heavily inspired by [ImageGoNord](https://github.com/Schrodinger-Hat/ImageGoNord).
 
 By default it applies a (linear) pre blur to the image to reduce noise,
-then quantizes each pixel to one of the colours in the [Monokai]() colour scheme.
+then quantizes each pixel to one of the colours in the Monokai colour scheme.
 
 ## Running
 
