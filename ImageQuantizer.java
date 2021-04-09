@@ -1,8 +1,15 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
 
-/**
+/******************************************************************************
  * Copyright (c) 2021 David Thompson
- */
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v2.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *****************************************************************************/
 
 import static java.lang.System.exit;
 import static java.lang.System.out;
@@ -27,6 +34,9 @@ import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 
+/**
+ * Program to quantize an image to a colour palette
+ */
 public class ImageQuantizer {
 
 	public static void main(String... args) throws Exception {
@@ -265,7 +275,10 @@ class Palettes {
 			ColorUtils.createColourFromHex("#CECCC0") //
 	);
 
-	public static List<Color> MONOCHROME = Arrays.asList(new Color(0, 0, 0), new Color(255, 255, 255));
+	public static List<Color> MONOCHROME = Arrays.asList( //
+			new Color(0, 0, 0), //
+			new Color(255, 255, 255) //
+	);
 
 	/**
 	 * Returns the best match for the colour in the palette
